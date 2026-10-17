@@ -4,6 +4,7 @@ node_modules/
 .env.local
 sessions/*
 !sessions/.gitkeep
+.wwebjs_cache/
 npm-debug.log*
 .DS_Store
 *.tsbuildinfo
