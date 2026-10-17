@@ -75,8 +75,13 @@ export function WhatsAppConnection({ onStatus }: { onStatus: (status: WhatsAppSt
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={qr} alt="WhatsApp login QR code" className="h-52 w-52 rounded-2xl border bg-white p-2" />
           <div className="text-sm leading-7 text-slate-600">
-            <p className="font-semibold text-slate-900">Open WhatsApp</p>
-            <p>Linked Devices → Link a Device → Scan this QR code</p>
+            <p className="font-semibold text-slate-900">Link this device</p>
+            <ol className="list-inside list-decimal">
+              <li>Scan this QR with your phone camera.</li>
+              <li>Tap the link to open WhatsApp.</li>
+              <li>Follow WhatsApp&apos;s prompt and scan the refreshed QR again.</li>
+            </ol>
+            <p className="mt-2 text-xs leading-5">If WhatsApp opens Linked Devices instead, select <span className="font-semibold">Link a Device</span> and scan the current code.</p>
           </div>
         </div>
       )}
