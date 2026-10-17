@@ -1,6 +1,7 @@
 import "server-only";
 
 import { campaigns } from "@/lib/campaigns";
+import { getMessageDelayMs } from "@/lib/config";
 import type { Recipient, ScheduledCampaign } from "@/lib/types";
 
 class Scheduler {
@@ -8,11 +9,17 @@ class Scheduler {
   private schedules = new Map<string, ScheduledCampaign>();
   private timers = new Map<string, NodeJS.Timeout>();
 
-  schedule(recipients: Recipient[], message: string, scheduledAt: Date): ScheduledCampaign {
+  schedule(
+    recipients: Recipient[],
+    message: string,
+    scheduledAt: Date,
+    delayMs: number,
+  ): ScheduledCampaign {
     const entry: ScheduledCampaign = {
       id: crypto.randomUUID(),
       recipients,
       message,
+      delayMs,
       scheduledAt: scheduledAt.toISOString(),
       createdAt: new Date().toISOString(),
       status: "SCHEDULED",
@@ -59,7 +66,11 @@ class Scheduler {
 
     this.timers.delete(id);
     entry.status = "PROCESSING";
-    const campaign = campaigns.start(entry.recipients, entry.message);
+    const campaign = campaigns.start(
+      entry.recipients,
+      entry.message,
+      entry.delayMs || getMessageDelayMs(),
+    );
     entry.campaignId = campaign.id;
     entry.results = campaign.results;
   }

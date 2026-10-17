@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getMaxRecipients } from "@/lib/config";
+import { getMaxRecipients, parseMessageDelayMs } from "@/lib/config";
 import { normalizeRecipientList } from "@/lib/recipients";
 import { parseFutureSchedule } from "@/lib/schedule-time";
 import { scheduler } from "@/lib/scheduler";
@@ -17,6 +17,7 @@ export async function POST(request: Request) {
       recipients?: unknown;
       message?: unknown;
       scheduledAt?: unknown;
+      delaySeconds?: unknown;
     };
 
     if (typeof body.message !== "string" || !body.message.trim()) {
@@ -24,8 +25,9 @@ export async function POST(request: Request) {
     }
 
     const recipients = normalizeRecipientList(body.recipients, getMaxRecipients());
+    const delayMs = parseMessageDelayMs(body.delaySeconds);
     const scheduledAt = parseFutureSchedule(body.scheduledAt);
-    const entry = scheduler.schedule(recipients, body.message.trim(), scheduledAt);
+    const entry = scheduler.schedule(recipients, body.message.trim(), scheduledAt, delayMs);
     return NextResponse.json(entry, { status: 201 });
   } catch (error) {
     return NextResponse.json(

@@ -21,6 +21,7 @@ export function MessageForm({ connectionStatus, onCampaign, onScheduled }: Messa
   const [mode, setMode] = useState<"now" | "schedule">("now");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [delaySeconds, setDelaySeconds] = useState(10);
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const hasInvalidImportedPhone = importedRecipients.some((recipient) => {
     try {
@@ -59,6 +60,7 @@ export function MessageForm({ connectionStatus, onCampaign, onScheduled }: Messa
             ? importedRecipients
             : recipients.split(/[\n,]+/).map((value) => value.trim()).filter(Boolean),
           message,
+          delaySeconds,
           ...(mode === "schedule" ? { scheduledAt: new Date(`${date}T${time}`).toISOString() } : {}),
         }),
       });
@@ -128,6 +130,24 @@ export function MessageForm({ connectionStatus, onCampaign, onScheduled }: Messa
       </div>
       <textarea ref={messageInputRef} id="message" value={message} onChange={(event) => setMessage(event.target.value)} rows={6} placeholder={`Hello ${RECIPIENT_NAME_TAG}, …`} className="mt-2 w-full resize-y rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-emerald-500" />
       <p className="mt-2 text-xs text-slate-500">The tag is replaced with each contact&apos;s name from the uploaded CSV.</p>
+      <label className="mt-5 block text-sm font-semibold" htmlFor="message-delay">
+        Delay between messages
+      </label>
+      <div className="mt-2 flex max-w-xs items-center rounded-xl border border-slate-200 bg-white focus-within:border-emerald-500">
+        <input
+          id="message-delay"
+          type="number"
+          min={1}
+          max={300}
+          step={1}
+          value={delaySeconds}
+          disabled={sending}
+          onChange={(event) => setDelaySeconds(Number(event.target.value))}
+          className="w-full rounded-xl px-3 py-2.5 outline-none"
+        />
+        <span className="pr-3 text-sm text-slate-500">seconds</span>
+      </div>
+      <p className="mt-1 text-xs text-slate-500">Fixed delay from 1 to 300 seconds for this campaign.</p>
       <fieldset className="mt-5">
         <legend className="text-sm font-semibold">Send option</legend>
         <div className="mt-2 flex gap-5 text-sm">
@@ -142,7 +162,7 @@ export function MessageForm({ connectionStatus, onCampaign, onScheduled }: Messa
         </div>
       )}
       {feedback && <p className="mt-4 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">{feedback}</p>}
-      <button onClick={() => void send()} disabled={sending || connectionStatus !== "CONNECTED" || !recipients.trim() || !message.trim() || hasInvalidImportedPhone} className="mt-5 w-full rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white hover:bg-slate-800">{sending ? "Working…" : mode === "now" ? "Send now" : "Schedule message"}</button>
+      <button onClick={() => void send()} disabled={sending || connectionStatus !== "CONNECTED" || !recipients.trim() || !message.trim() || hasInvalidImportedPhone || !Number.isInteger(delaySeconds) || delaySeconds < 1 || delaySeconds > 300} className="mt-5 w-full rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white hover:bg-slate-800">{sending ? "Working…" : mode === "now" ? "Send now" : "Schedule message"}</button>
     </section>
   );
 }

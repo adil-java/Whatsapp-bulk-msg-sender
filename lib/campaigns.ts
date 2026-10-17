@@ -8,10 +8,11 @@ import { whatsapp } from "@/lib/whatsapp";
 class CampaignService {
   constructor(private readonly campaigns: Map<string, SendCampaign>) {}
 
-  start(recipients: Recipient[], message: string): SendCampaign {
+  start(recipients: Recipient[], message: string, delayMs: number): SendCampaign {
     const campaign: SendCampaign = {
       id: crypto.randomUUID(),
       message,
+      delayMs,
       createdAt: new Date().toISOString(),
       status: "PROCESSING",
       results: recipients.map(({ phone, name }) => ({ phone, ...(name ? { name } : {}), status: "PENDING" })),
@@ -43,7 +44,7 @@ class CampaignService {
       }
 
       if (index < campaign.results.length - 1) {
-        await new Promise((resolve) => setTimeout(resolve, getMessageDelayMs()));
+        await new Promise((resolve) => setTimeout(resolve, campaign.delayMs || getMessageDelayMs()));
       }
     }
 

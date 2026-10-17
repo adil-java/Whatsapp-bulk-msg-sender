@@ -43,6 +43,12 @@ export class WhatsAppWebProvider implements MessagingProvider {
     this.status = "DISCONNECTED";
 
     if (client) {
+      try {
+        // logout() removes the saved session so the next connect requires a fresh QR scan.
+        await client.logout();
+      } catch {
+        // logout may fail if the connection was already lost; proceed to destroy anyway.
+      }
       await client.destroy();
     }
   }

@@ -60,6 +60,7 @@ export function ScheduledMessages({ refreshToken }: { refreshToken: number }) {
                 <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">{entry.status}</span>
                 {entry.status === "SCHEDULED" && <button onClick={() => void cancel(entry.id)} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50">Cancel</button>}
               </div>
+
             </article>
           );
         })}
@@ -67,4 +68,3 @@ export function ScheduledMessages({ refreshToken }: { refreshToken: number }) {
     </section>
   );
 }
-

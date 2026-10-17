@@ -15,7 +15,7 @@ type RecipientInputProps = {
 
 export function RecipientInput({ value, onChange, importedRecipients, onCsvImport, disabled }: RecipientInputProps) {
   const [csvErrors, setCsvErrors] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<"manual" | "contacts">("manual");
+  const [activeTab, setActiveTab] = useState<"manual" | "contacts">("contacts");
 
   async function importCsv(file: File) {
     try {
@@ -77,15 +77,7 @@ export function RecipientInput({ value, onChange, importedRecipients, onCsvImpor
         </label>
       </div>
       <div role="tablist" aria-label="Recipient input method" className="mt-3 flex rounded-xl bg-slate-100 p-1">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === "manual"}
-          onClick={() => setActiveTab("manual")}
-          className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold ${activeTab === "manual" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}
-        >
-          Manual entry
-        </button>
+
         <button
           type="button"
           role="tab"
@@ -193,8 +185,8 @@ export function RecipientInput({ value, onChange, importedRecipients, onCsvImpor
       {csvErrors.length > 0 && (
         <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800">
           <p className="font-semibold">{csvErrors.length} CSV row{csvErrors.length === 1 ? "" : "s"} skipped</p>
-          {csvErrors.slice(0, 3).map((error, index) => <p key={`${index}-${error}`} className="mt-1">{error}</p>)}
-          {csvErrors.length > 3 && <p className="mt-1">And {csvErrors.length - 3} more…</p>}
+          {csvErrors.slice(0, csvErrors.length).map((error, index) => <p key={`${index}-${error}`} className="mt-1">{error}</p>)}
+
         </div>
       )}
 

@@ -25,6 +25,7 @@ export type CampaignStatus = "PROCESSING" | "COMPLETED";
 export type SendCampaign = {
   id: string;
   message: string;
+  delayMs: number;
   createdAt: string;
   completedAt?: string;
   status: CampaignStatus;
@@ -37,6 +38,7 @@ export type ScheduledCampaign = {
   id: string;
   recipients: Recipient[];
   message: string;
+  delayMs: number;
   scheduledAt: string;
   createdAt: string;
   status: ScheduledCampaignStatus;
