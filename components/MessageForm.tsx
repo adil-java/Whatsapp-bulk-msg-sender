@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { RecipientInput } from "@/components/RecipientInput";
+import { normalizePhoneNumber } from "@/lib/phone";
 import type { Recipient, SendCampaign, WhatsAppStatus } from "@/lib/types";
 
 type MessageFormProps = {
@@ -19,6 +20,14 @@ export function MessageForm({ connectionStatus, onCampaign, onScheduled }: Messa
   const [mode, setMode] = useState<"now" | "schedule">("now");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const hasInvalidImportedPhone = importedRecipients.some((recipient) => {
+    try {
+      normalizePhoneNumber(recipient.phone);
+      return false;
+    } catch {
+      return true;
+    }
+  });
 
   async function pollCampaign(id: string) {
     const response = await fetch(`/api/send/${id}`, { cache: "no-store" });
@@ -107,7 +116,7 @@ export function MessageForm({ connectionStatus, onCampaign, onScheduled }: Messa
         </div>
       )}
       {feedback && <p className="mt-4 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">{feedback}</p>}
-      <button onClick={() => void send()} disabled={sending || connectionStatus !== "CONNECTED" || !recipients.trim() || !message.trim()} className="mt-5 w-full rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white hover:bg-slate-800">{sending ? "Working…" : mode === "now" ? "Send now" : "Schedule message"}</button>
+      <button onClick={() => void send()} disabled={sending || connectionStatus !== "CONNECTED" || !recipients.trim() || !message.trim() || hasInvalidImportedPhone} className="mt-5 w-full rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white hover:bg-slate-800">{sending ? "Working…" : mode === "now" ? "Send now" : "Schedule message"}</button>
     </section>
   );
 }

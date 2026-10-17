@@ -19,7 +19,7 @@ Ali Khan,03001234567
 Sara Ahmed,+92 312-1234567
 ```
 
-CSV phone numbers are normalized and previewed before sending. Use `{{name}}` in the message to personalize each recipient's copy.
+CSV phone numbers are normalized and displayed in an editable **Imported contacts** table. Names and numbers can be corrected, removed, or added before sending. Use `{{name}}` in the message to personalize each recipient's copy.
 
 The WhatsApp session is stored under `sessions/` and is ignored by Git. Scheduling is deliberately in-memory: pending schedules disappear if the server stops.
 
