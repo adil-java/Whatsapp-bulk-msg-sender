@@ -3,6 +3,7 @@ import "server-only";
 import QRCode from "qrcode";
 import { Client, LocalAuth } from "whatsapp-web.js";
 import type { MessagingProvider } from "@/lib/providers/messaging-provider";
+import { recipientNumberCandidates } from "@/lib/recipient-candidates";
 import type { ConnectionSnapshot, WhatsAppStatus } from "@/lib/types";
 
 export class WhatsAppWebProvider implements MessagingProvider {
@@ -57,7 +58,25 @@ export class WhatsAppWebProvider implements MessagingProvider {
       throw new Error("WhatsApp is not connected.");
     }
 
-    await this.client.sendMessage(`${phone}@c.us`, message);
+    const client = this.client;
+    let accountCountryCode = "";
+    try {
+      accountCountryCode = await client.getCountryCode(client.info.wid.user);
+    } catch {
+      // A full international recipient number can still be resolved below.
+    }
+
+    for (const candidate of recipientNumberCandidates(phone, accountCountryCode)) {
+      const numberId = await client.getNumberId(candidate);
+      if (numberId) {
+        await client.sendMessage(numberId._serialized, message);
+        return;
+      }
+    }
+
+    throw new Error(
+      `The number ${phone} is not registered on WhatsApp. Check the number in Imported contacts.`,
+    );
   }
 
   private createClient(): Client {

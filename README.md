@@ -23,6 +23,8 @@ CSV phone numbers are normalized and displayed in an editable **Imported contact
 
 Phone numbers from any country are accepted with or without a country code. The CSV importer removes visual formatting such as spaces, dashes, and parentheses, but does not add or require a country code.
 
+When sending a local number, the app automatically tries the country calling code of the connected WhatsApp account. No country selection is required.
+
 The WhatsApp session is stored under `sessions/` and is ignored by Git. Scheduling is deliberately in-memory: pending schedules disappear if the server stops.
 
 If Puppeteer reports a missing Chrome framework after an interrupted install, remove its named version folder and matching ZIP from `~/.cache/puppeteer/chrome/`, then run `npx puppeteer browsers install chrome` again. Restart the development server after the browser install completes.
