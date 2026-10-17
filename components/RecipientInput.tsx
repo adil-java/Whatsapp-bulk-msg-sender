@@ -49,7 +49,7 @@ export function RecipientInput({ value, onChange, importedRecipients, onCsvImpor
       normalizePhoneNumber(phone);
       return null;
     } catch {
-      return "Enter a valid Pakistan mobile number.";
+      return "Enter a valid phone number.";
     }
   }
 
@@ -105,10 +105,10 @@ export function RecipientInput({ value, onChange, importedRecipients, onCsvImpor
             onChange={(event) => onChange(event.target.value)}
             disabled={disabled}
             rows={5}
-            placeholder={"03001234567\n03121234567\n03331234567"}
+            placeholder={"+1 415 555 2671\n0044 7700 900123\n0300 1234567"}
             className="mt-3 w-full resize-y rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-emerald-500"
           />
-          <p className="mt-2 text-xs text-slate-500">Enter one number per line or separate numbers with commas.</p>
+          <p className="mt-2 text-xs text-slate-500">Enter one number per line or separate with commas. Country code is optional.</p>
         </div>
       )}
 

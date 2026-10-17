@@ -5,7 +5,7 @@ describe("parseRecipientCsv", () => {
   it("reads names and normalized phone numbers", () => {
     const result = parseRecipientCsv('Name,Phone\n"Khan, Ali",03001234567\nSara,+92 312-1234567');
     expect(result.recipients).toEqual([
-      { name: "Khan, Ali", phone: "923001234567" },
+      { name: "Khan, Ali", phone: "03001234567" },
       { name: "Sara", phone: "923121234567" },
     ]);
     expect(result.errors).toEqual([]);
@@ -13,7 +13,7 @@ describe("parseRecipientCsv", () => {
 
   it("accepts common header aliases and reports invalid rows", () => {
     const result = parseRecipientCsv("Full Name,Mobile Number\nAli,123\nSara,03331234567");
-    expect(result.recipients).toEqual([{ name: "Sara", phone: "923331234567" }]);
+    expect(result.recipients).toEqual([{ name: "Sara", phone: "03331234567" }]);
     expect(result.errors[0]).toContain("Row 2");
   });
 
@@ -25,9 +25,9 @@ describe("parseRecipientCsv", () => {
     ].join("\n");
 
     expect(parseRecipientCsv(csv).recipients).toEqual([
-      { name: "Ali Khan", phone: "923001234567" },
-      { name: "Ali Khan", phone: "923121234567" },
-      { name: "Sara N. Ahmed", phone: "923331234567" },
+      { name: "Ali Khan", phone: "03001234567" },
+      { name: "Ali Khan", phone: "03121234567" },
+      { name: "Sara N. Ahmed", phone: "03331234567" },
     ]);
   });
 

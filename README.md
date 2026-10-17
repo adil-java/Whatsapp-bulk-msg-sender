@@ -21,6 +21,8 @@ Sara Ahmed,+92 312-1234567
 
 CSV phone numbers are normalized and displayed in an editable **Imported contacts** table. Names and numbers can be corrected, removed, or added before sending. Use `{{name}}` in the message to personalize each recipient's copy.
 
+Phone numbers from any country are accepted with or without a country code. The CSV importer removes visual formatting such as spaces, dashes, and parentheses, but does not add or require a country code.
+
 The WhatsApp session is stored under `sessions/` and is ignored by Git. Scheduling is deliberately in-memory: pending schedules disappear if the server stops.
 
 If Puppeteer reports a missing Chrome framework after an interrupted install, remove its named version folder and matching ZIP from `~/.cache/puppeteer/chrome/`, then run `npx puppeteer browsers install chrome` again. Restart the development server after the browser install completes.

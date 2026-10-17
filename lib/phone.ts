@@ -1,18 +1,29 @@
-const PAKISTAN_LOCAL_PATTERN = /^03\d{9}$/;
-const PAKISTAN_INTERNATIONAL_PATTERN = /^923\d{9}$/;
+const MIN_INTERNATIONAL_DIGITS = 7;
+const MAX_INTERNATIONAL_DIGITS = 15;
 
-export function normalizePhoneNumber(value: string): string {
-  const digits = value.replace(/[+\s\-()]/g, "");
+export function normalizePhoneNumber(
+  value: string,
+): string {
+  const input = value.trim();
+  const compact = input.replace(/[\s\-().]/g, "");
+  const digits = compact.startsWith("+")
+    ? compact.slice(1)
+    : compact.startsWith("00")
+      ? compact.slice(2)
+      : compact;
 
-  if (PAKISTAN_LOCAL_PATTERN.test(digits)) {
-    return `92${digits.slice(1)}`;
+  if (!/^\d+$/.test(digits)) {
+    throw new Error(`Invalid phone number: ${input || "empty value"}`);
   }
 
-  if (PAKISTAN_INTERNATIONAL_PATTERN.test(digits)) {
-    return digits;
+  if (
+    digits.length < MIN_INTERNATIONAL_DIGITS ||
+    digits.length > MAX_INTERNATIONAL_DIGITS
+  ) {
+    throw new Error(`Invalid phone number: ${input || "empty value"}`);
   }
 
-  throw new Error(`Invalid Pakistan phone number: ${value.trim() || "empty value"}`);
+  return digits;
 }
 
 export function parseRecipientInput(input: string): string[] {
@@ -21,6 +32,5 @@ export function parseRecipientInput(input: string): string[] {
     .map((value) => value.trim())
     .filter(Boolean);
 
-  return [...new Set(values.map(normalizePhoneNumber))];
+  return [...new Set(values.map((value) => normalizePhoneNumber(value)))];
 }
-
