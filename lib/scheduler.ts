@@ -1,14 +1,14 @@
 import "server-only";
 
 import { campaigns } from "@/lib/campaigns";
-import type { ScheduledCampaign } from "@/lib/types";
+import type { Recipient, ScheduledCampaign } from "@/lib/types";
 
 class Scheduler {
   private static readonly MAX_TIMEOUT_MS = 2_147_483_647;
   private schedules = new Map<string, ScheduledCampaign>();
   private timers = new Map<string, NodeJS.Timeout>();
 
-  schedule(recipients: string[], message: string, scheduledAt: Date): ScheduledCampaign {
+  schedule(recipients: Recipient[], message: string, scheduledAt: Date): ScheduledCampaign {
     const entry: ScheduledCampaign = {
       id: crypto.randomUUID(),
       recipients,

@@ -21,6 +21,7 @@ export function MessageStatus({ campaign }: { campaign: SendCampaign }) {
         {campaign.results.map((result) => (
           <div key={result.phone} className="grid grid-cols-[1fr_auto] gap-4 border-b border-slate-100 p-4 last:border-b-0">
             <div>
+              {result.name && <p className="text-sm font-semibold text-slate-800">{result.name}</p>}
               <p className="font-mono text-sm">{result.phone}</p>
               {result.error && <p className="mt-1 text-xs text-red-700">{result.error}</p>}
             </div>
@@ -31,4 +32,3 @@ export function MessageStatus({ campaign }: { campaign: SendCampaign }) {
     </section>
   );
 }
-

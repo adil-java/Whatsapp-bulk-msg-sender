@@ -8,8 +8,14 @@ export type WhatsAppStatus =
 
 export type MessageState = "PENDING" | "SENDING" | "SENT" | "FAILED";
 
+export type Recipient = {
+  phone: string;
+  name?: string;
+};
+
 export type MessageResult = {
   phone: string;
+  name?: string;
   status: MessageState;
   error?: string;
 };
@@ -29,7 +35,7 @@ export type ScheduledCampaignStatus = "SCHEDULED" | "PROCESSING" | "COMPLETED";
 
 export type ScheduledCampaign = {
   id: string;
-  recipients: string[];
+  recipients: Recipient[];
   message: string;
   scheduledAt: string;
   createdAt: string;

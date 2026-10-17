@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { MessagingProvider } from "@/lib/providers/messaging-provider";
-import type { SendCampaign } from "@/lib/types";
+import type { Recipient, SendCampaign } from "@/lib/types";
 import { getMessageDelayMs } from "@/lib/config";
 import { whatsapp } from "@/lib/whatsapp";
 
@@ -10,13 +10,13 @@ class CampaignService {
 
   constructor(private readonly provider: MessagingProvider) {}
 
-  start(recipients: string[], message: string): SendCampaign {
+  start(recipients: Recipient[], message: string): SendCampaign {
     const campaign: SendCampaign = {
       id: crypto.randomUUID(),
       message,
       createdAt: new Date().toISOString(),
       status: "PROCESSING",
-      results: recipients.map((phone) => ({ phone, status: "PENDING" })),
+      results: recipients.map(({ phone, name }) => ({ phone, ...(name ? { name } : {}), status: "PENDING" })),
     };
 
     this.campaigns.set(campaign.id, campaign);
@@ -36,7 +36,10 @@ class CampaignService {
       delete result.error;
 
       try {
-        await this.provider.sendMessage(result.phone, campaign.message);
+        const message = result.name
+          ? campaign.message.replaceAll("{{name}}", result.name)
+          : campaign.message;
+        await this.provider.sendMessage(result.phone, message);
         result.status = "SENT";
       } catch (error) {
         result.status = "FAILED";
@@ -59,4 +62,3 @@ const globalForCampaigns = globalThis as typeof globalThis & {
 
 export const campaigns =
   globalForCampaigns.campaignService ?? (globalForCampaigns.campaignService = new CampaignService(whatsapp));
-
