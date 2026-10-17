@@ -113,6 +113,11 @@ export function parseRecipientCsv(content: string): CsvParseResult {
     }
   }
 
-  if (recipients.size === 0) throw new Error("The CSV does not contain any valid recipients.");
+  if (recipients.size === 0) {
+    const details = errors.slice(0, 3).join(" ");
+    throw new Error(
+      `The CSV does not contain any valid recipients.${details ? ` ${details}` : ""}`,
+    );
+  }
   return { recipients: [...recipients.values()], errors };
 }

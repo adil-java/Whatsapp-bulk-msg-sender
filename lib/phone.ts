@@ -27,7 +27,13 @@ function expandScientificInteger(value: string): string {
     return digits.slice(0, decimalIndex);
   }
 
-  return digits.padEnd(decimalIndex, "0");
+  if (decimalIndex > digits.length) {
+    throw new Error(
+      `Scientific notation has truncated phone digits: ${value}. Re-export the phone column as text.`,
+    );
+  }
+
+  return digits;
 }
 
 export function normalizePhoneNumber(value: string): string {

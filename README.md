@@ -23,7 +23,7 @@ CSV phone numbers are normalized and displayed in an editable **Imported contact
 
 Phone numbers from any country are accepted with or without a country code. The CSV importer removes visual formatting such as spaces, dashes, and parentheses, but does not add or require a country code.
 
-Common spreadsheet representations are accepted, including scientific notation (`9.23192900498E+11`), text formulas (`="+92…"`), apostrophe-prefixed text, and integer values ending in `.0`. Scientific notation is expanded exactly as stored; verify the editable result because a spreadsheet may already have truncated digits before export.
+Common spreadsheet representations are accepted, including full-precision scientific notation (`9.23192900498E+11`), text formulas (`="+92…"`), apostrophe-prefixed text, and integer values ending in `.0`. Shortened scientific values such as `9.23313E+11` are rejected because the original trailing phone digits are no longer present and cannot be recovered safely.
 
 When sending a local number, the app automatically tries the country calling code of the connected WhatsApp account. No country selection is required.
 

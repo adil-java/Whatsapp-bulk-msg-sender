@@ -82,17 +82,12 @@ describe("parseRecipientCsv", () => {
     ]);
   });
 
-  it("imports phone numbers converted to scientific notation by a spreadsheet", () => {
-    const result = parseRecipientCsv(
+  it("rejects phone numbers truncated into scientific notation by a spreadsheet", () => {
+    expect(() => parseRecipientCsv(
       "First Name,Middle Name,Last Name,Phone 1 - Label,Phone 1 - Value\r\n" +
         "Umar,,Bhai,Mobile,9.23313E+11\r\n" +
         "Sara,,,Mobile,9.23019E+12",
-    );
-
-    expect(result.recipients).toEqual([
-      { name: "Umar Bhai", phone: "923313000000" },
-      { name: "Sara", phone: "9230190000000" },
-    ]);
+    )).toThrow("Scientific notation has truncated phone digits");
   });
 
   it("requires name and phone columns", () => {

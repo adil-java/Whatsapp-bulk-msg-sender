@@ -18,10 +18,15 @@ describe("normalizePhoneNumber", () => {
 
   it("accepts common spreadsheet phone formats", () => {
     expect(normalizePhoneNumber("9.23192900498E+11")).toBe("923192900498");
-    expect(normalizePhoneNumber("9.23313E+11")).toBe("923313000000");
     expect(normalizePhoneNumber('="+92 319 2900498"')).toBe("923192900498");
     expect(normalizePhoneNumber("'+92 319 2900498")).toBe("923192900498");
     expect(normalizePhoneNumber("923192900498.0")).toBe("923192900498");
+  });
+
+  it("rejects scientific notation that no longer contains every phone digit", () => {
+    expect(() => normalizePhoneNumber("9.23313E+11")).toThrow(
+      "Scientific notation has truncated phone digits",
+    );
   });
 
   it("rejects an invalid number", () => {
