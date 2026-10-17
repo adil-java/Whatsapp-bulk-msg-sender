@@ -23,6 +23,8 @@ CSV phone numbers are normalized and displayed in an editable **Imported contact
 
 Phone numbers from any country are accepted with or without a country code. The CSV importer removes visual formatting such as spaces, dashes, and parentheses, but does not add or require a country code.
 
+Common spreadsheet representations are accepted, including scientific notation (`9.23192900498E+11`), text formulas (`="+92…"`), apostrophe-prefixed text, and integer values ending in `.0`. Scientific notation is expanded exactly as stored; verify the editable result because a spreadsheet may already have truncated digits before export.
+
 When sending a local number, the app automatically tries the country calling code of the connected WhatsApp account. No country selection is required.
 
 The WhatsApp session is stored under `sessions/` and is ignored by Git. Scheduling is deliberately in-memory: pending schedules disappear if the server stops.
