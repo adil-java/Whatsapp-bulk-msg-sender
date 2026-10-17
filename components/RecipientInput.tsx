@@ -53,7 +53,7 @@ export function RecipientInput({ value, onChange, importedRecipients, onCsvImpor
         placeholder={"03001234567\n03121234567\n03331234567"}
         className="mt-2 w-full resize-y rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-emerald-500"
       />
-      <p className="mt-2 text-xs text-slate-500">Enter numbers manually, or upload a CSV with <span className="font-mono">name,phone</span> columns.</p>
+      <p className="mt-2 text-xs text-slate-500">Enter numbers manually, or upload a <span className="font-semibold">Google Contacts CSV</span> or a CSV with <span className="font-mono">name,phone</span> columns.</p>
 
       {csvErrors.length > 0 && (
         <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800">

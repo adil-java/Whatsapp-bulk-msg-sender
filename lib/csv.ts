@@ -6,7 +6,10 @@ export type CsvParseResult = {
   errors: string[];
 };
 
-const NAME_HEADERS = new Set(["name", "fullname", "recipientname", "contactname"]);
+const NAME_HEADERS = new Set(["name", "fullname", "displayname", "recipientname", "contactname"]);
+const GIVEN_NAME_HEADERS = new Set(["givenname", "firstname"]);
+const MIDDLE_NAME_HEADERS = new Set(["additionalname", "middlename"]);
+const FAMILY_NAME_HEADERS = new Set(["familyname", "lastname", "surname"]);
 const PHONE_HEADERS = new Set([
   "phone",
   "phonenumber",
@@ -62,29 +65,51 @@ export function parseRecipientCsv(content: string): CsvParseResult {
 
   const headers = rows[0].map(headerKey);
   const nameIndex = headers.findIndex((header) => NAME_HEADERS.has(header));
-  const phoneIndex = headers.findIndex((header) => PHONE_HEADERS.has(header));
-  if (nameIndex === -1 || phoneIndex === -1) {
-    throw new Error('CSV must contain "name" and "phone" (or "number") columns.');
+  const givenNameIndex = headers.findIndex((header) => GIVEN_NAME_HEADERS.has(header));
+  const middleNameIndex = headers.findIndex((header) => MIDDLE_NAME_HEADERS.has(header));
+  const familyNameIndex = headers.findIndex((header) => FAMILY_NAME_HEADERS.has(header));
+  const phoneIndexes = headers
+    .map((header, index) => ({ header, index }))
+    .filter(({ header }) => PHONE_HEADERS.has(header) || /^phone\d+value$/.test(header))
+    .map(({ index }) => index);
+  const hasNameColumn = nameIndex !== -1 || givenNameIndex !== -1 || familyNameIndex !== -1;
+  if (!hasNameColumn || phoneIndexes.length === 0) {
+    throw new Error(
+      'CSV must contain a name field and a phone field such as "phone" or Google Contacts "Phone 1 - Value".',
+    );
   }
 
   const recipients = new Map<string, Recipient>();
   const errors: string[] = [];
   for (let index = 1; index < rows.length; index += 1) {
-    const name = rows[index][nameIndex]?.trim() ?? "";
-    const phoneValue = rows[index][phoneIndex]?.trim() ?? "";
-    if (!phoneValue) {
+    const fullName = nameIndex === -1 ? "" : rows[index][nameIndex]?.trim() ?? "";
+    const nameParts = [givenNameIndex, middleNameIndex, familyNameIndex]
+      .filter((columnIndex) => columnIndex !== -1)
+      .map((columnIndex) => rows[index][columnIndex]?.trim() ?? "")
+      .filter(Boolean);
+    const name = fullName || nameParts.join(" ");
+    const phoneValues = phoneIndexes.flatMap((phoneIndex) =>
+      (rows[index][phoneIndex]?.trim() ?? "")
+        .split(/\s*:::\s*/)
+        .map((value) => value.trim())
+        .filter(Boolean),
+    );
+
+    if (phoneValues.length === 0) {
       errors.push(`Row ${index + 1}: phone number is missing.`);
       continue;
     }
 
-    try {
-      const phone = normalizePhoneNumber(phoneValue);
-      const existing = recipients.get(phone);
-      if (!existing || (!existing.name && name)) {
-        recipients.set(phone, { phone, ...(name ? { name } : {}) });
+    for (const phoneValue of phoneValues) {
+      try {
+        const phone = normalizePhoneNumber(phoneValue);
+        const existing = recipients.get(phone);
+        if (!existing || (!existing.name && name)) {
+          recipients.set(phone, { phone, ...(name ? { name } : {}) });
+        }
+      } catch (error) {
+        errors.push(`Row ${index + 1}: ${error instanceof Error ? error.message : String(error)}`);
       }
-    } catch (error) {
-      errors.push(`Row ${index + 1}: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

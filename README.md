@@ -11,7 +11,7 @@ A local-only Next.js demo that connects through WhatsApp Web, sends sequential r
 
 ## CSV recipients
 
-Upload a `.csv` file with `name` and `phone` columns. `number`, `mobile`, and `whatsapp` are also accepted as phone-column names.
+Upload a Google Contacts CSV directly. The importer recognizes `Name`, separate given/family name fields, and every `Phone <number> - Value` column. It also accepts simple CSV files with `name` and `phone` columns; `number`, `mobile`, and `whatsapp` are supported aliases.
 
 ```csv
 name,phone
