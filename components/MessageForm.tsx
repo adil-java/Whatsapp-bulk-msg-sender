@@ -7,13 +7,17 @@ import type { SendCampaign, WhatsAppStatus } from "@/lib/types";
 type MessageFormProps = {
   connectionStatus: WhatsAppStatus;
   onCampaign: (campaign: SendCampaign) => void;
+  onScheduled: () => void;
 };
 
-export function MessageForm({ connectionStatus, onCampaign }: MessageFormProps) {
+export function MessageForm({ connectionStatus, onCampaign, onScheduled }: MessageFormProps) {
   const [recipients, setRecipients] = useState("");
   const [message, setMessage] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [mode, setMode] = useState<"now" | "schedule">("now");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
 
   async function pollCampaign(id: string) {
     const response = await fetch(`/api/send/${id}`, { cache: "no-store" });
@@ -33,22 +37,30 @@ export function MessageForm({ connectionStatus, onCampaign }: MessageFormProps) 
     setSending(true);
     setFeedback(null);
     try {
-      const response = await fetch("/api/send", {
+      if (mode === "schedule" && (!date || !time)) throw new Error("Choose a future date and time.");
+      const endpoint = mode === "now" ? "/api/send" : "/api/schedule";
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           recipients: recipients.split(/[\n,]+/).map((value) => value.trim()).filter(Boolean),
           message,
+          ...(mode === "schedule" ? { scheduledAt: new Date(`${date}T${time}`).toISOString() } : {}),
         }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Message failed.");
-      const campaign = data as SendCampaign;
-      onCampaign(campaign);
-      setFeedback("Campaign started. Messages are sent one at a time.");
-      void pollCampaign(campaign.id).catch((error: unknown) => {
-        setFeedback(error instanceof Error ? error.message : String(error));
-      });
+      if (mode === "now") {
+        const campaign = data as SendCampaign;
+        onCampaign(campaign);
+        setFeedback("Campaign started. Messages are sent one at a time.");
+        void pollCampaign(campaign.id).catch((error: unknown) => {
+          setFeedback(error instanceof Error ? error.message : String(error));
+        });
+      } else {
+        setFeedback("Message scheduled. Keep this server running until it completes.");
+        onScheduled();
+      }
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : String(error));
     } finally {
@@ -63,8 +75,21 @@ export function MessageForm({ connectionStatus, onCampaign }: MessageFormProps) 
       <div className="mt-6"><RecipientInput value={recipients} onChange={setRecipients} disabled={sending} /></div>
       <label className="mt-5 block text-sm font-semibold" htmlFor="message">Message</label>
       <textarea id="message" value={message} onChange={(event) => setMessage(event.target.value)} rows={6} placeholder="Your reminder…" className="mt-2 w-full resize-y rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-emerald-500" />
+      <fieldset className="mt-5">
+        <legend className="text-sm font-semibold">Send option</legend>
+        <div className="mt-2 flex gap-5 text-sm">
+          <label className="flex items-center gap-2"><input type="radio" name="mode" checked={mode === "now"} onChange={() => setMode("now")} /> Send now</label>
+          <label className="flex items-center gap-2"><input type="radio" name="mode" checked={mode === "schedule"} onChange={() => setMode("schedule")} /> Schedule</label>
+        </div>
+      </fieldset>
+      {mode === "schedule" && (
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <label className="text-sm font-semibold">Date<input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 font-normal" /></label>
+          <label className="text-sm font-semibold">Time<input type="time" value={time} onChange={(event) => setTime(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 font-normal" /></label>
+        </div>
+      )}
       {feedback && <p className="mt-4 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">{feedback}</p>}
-      <button onClick={() => void send()} disabled={sending || connectionStatus !== "CONNECTED" || !recipients.trim() || !message.trim()} className="mt-5 w-full rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white hover:bg-slate-800">{sending ? "Starting…" : "Send now"}</button>
+      <button onClick={() => void send()} disabled={sending || connectionStatus !== "CONNECTED" || !recipients.trim() || !message.trim()} className="mt-5 w-full rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white hover:bg-slate-800">{sending ? "Working…" : mode === "now" ? "Send now" : "Schedule message"}</button>
     </section>
   );
 }

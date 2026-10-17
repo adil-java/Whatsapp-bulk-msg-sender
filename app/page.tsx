@@ -3,12 +3,14 @@
 import { useCallback, useState } from "react";
 import { MessageForm } from "@/components/MessageForm";
 import { MessageStatus } from "@/components/MessageStatus";
+import { ScheduledMessages } from "@/components/ScheduledMessages";
 import { WhatsAppConnection } from "@/components/WhatsAppConnection";
 import type { SendCampaign, WhatsAppStatus } from "@/lib/types";
 
 export default function Home() {
   const [status, setStatus] = useState<WhatsAppStatus>("DISCONNECTED");
   const [campaign, setCampaign] = useState<SendCampaign | null>(null);
+  const [scheduleRefresh, setScheduleRefresh] = useState(0);
   const handleStatus = useCallback((next: WhatsAppStatus) => setStatus(next), []);
 
   return (
@@ -20,9 +22,10 @@ export default function Home() {
       </header>
       <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
         <WhatsAppConnection onStatus={handleStatus} />
-        <MessageForm connectionStatus={status} onCampaign={setCampaign} />
+        <MessageForm connectionStatus={status} onCampaign={setCampaign} onScheduled={() => setScheduleRefresh((value) => value + 1)} />
       </div>
       {campaign && <div className="mt-6"><MessageStatus campaign={campaign} /></div>}
+      <ScheduledMessages refreshToken={scheduleRefresh} />
     </main>
   );
 }

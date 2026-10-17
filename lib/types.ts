@@ -25,6 +25,19 @@ export type SendCampaign = {
   results: MessageResult[];
 };
 
+export type ScheduledCampaignStatus = "SCHEDULED" | "PROCESSING" | "COMPLETED";
+
+export type ScheduledCampaign = {
+  id: string;
+  recipients: string[];
+  message: string;
+  scheduledAt: string;
+  createdAt: string;
+  status: ScheduledCampaignStatus;
+  campaignId?: string;
+  results?: MessageResult[];
+};
+
 export type ConnectionSnapshot = {
   status: WhatsAppStatus;
   error?: string;

@@ -1,6 +1,6 @@
 # WhatsApp Reminder Demo
 
-A local-only Next.js demo that connects through WhatsApp Web, sends sequential reminders to consenting recipients, and keeps campaign state in memory.
+A local-only Next.js demo that connects through WhatsApp Web, sends sequential reminders to consenting recipients, and keeps campaign and schedule state in memory.
 
 ## Run locally
 
