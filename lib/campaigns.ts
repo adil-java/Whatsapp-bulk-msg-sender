@@ -1,15 +1,12 @@
 import "server-only";
 
-import type { MessagingProvider } from "@/lib/providers/messaging-provider";
 import type { Recipient, SendCampaign } from "@/lib/types";
 import { getMessageDelayMs } from "@/lib/config";
 import { personalizeMessage } from "@/lib/message-template";
 import { whatsapp } from "@/lib/whatsapp";
 
 class CampaignService {
-  private campaigns = new Map<string, SendCampaign>();
-
-  constructor(private readonly provider: MessagingProvider) {}
+  constructor(private readonly campaigns: Map<string, SendCampaign>) {}
 
   start(recipients: Recipient[], message: string): SendCampaign {
     const campaign: SendCampaign = {
@@ -38,7 +35,7 @@ class CampaignService {
 
       try {
         const message = personalizeMessage(campaign.message, result.name);
-        await this.provider.sendMessage(result.phone, message);
+        await whatsapp.sendMessage(result.phone, message);
         result.status = "SENT";
       } catch (error) {
         result.status = "FAILED";
@@ -56,8 +53,12 @@ class CampaignService {
 }
 
 const globalForCampaigns = globalThis as typeof globalThis & {
-  campaignService?: CampaignService;
+  campaignStore?: Map<string, SendCampaign>;
 };
 
-export const campaigns =
-  globalForCampaigns.campaignService ?? (globalForCampaigns.campaignService = new CampaignService(whatsapp));
+const campaignStore =
+  globalForCampaigns.campaignStore ?? (globalForCampaigns.campaignStore = new Map<string, SendCampaign>());
+
+// Recreate the service wrapper after a dev hot reload so it always references
+// the current WhatsApp module, while keeping campaign results in shared state.
+export const campaigns = new CampaignService(campaignStore);
