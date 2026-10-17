@@ -24,7 +24,7 @@ export class WhatsAppWebProvider implements MessagingProvider {
       this.status = "ERROR";
       this.error = this.errorMessage(error);
       this.initialization = null;
-      throw error;
+      this.client = null;
     });
 
     // Initialization remains pending until WhatsApp authentication completes.
@@ -114,4 +114,3 @@ export class WhatsAppWebProvider implements MessagingProvider {
     return error instanceof Error ? error.message : String(error);
   }
 }
-
