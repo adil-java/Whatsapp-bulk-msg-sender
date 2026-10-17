@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { RecipientInput } from "@/components/RecipientInput";
+import { RECIPIENT_NAME_TAG } from "@/lib/message-template";
 import { normalizePhoneNumber } from "@/lib/phone";
 import type { Recipient, SendCampaign, WhatsAppStatus } from "@/lib/types";
 
@@ -20,6 +21,7 @@ export function MessageForm({ connectionStatus, onCampaign, onScheduled }: Messa
   const [mode, setMode] = useState<"now" | "schedule">("now");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const hasInvalidImportedPhone = importedRecipients.some((recipient) => {
     try {
       normalizePhoneNumber(recipient.phone);
@@ -80,6 +82,20 @@ export function MessageForm({ connectionStatus, onCampaign, onScheduled }: Messa
     }
   }
 
+  function insertRecipientNameTag() {
+    const input = messageInputRef.current;
+    const start = input?.selectionStart ?? message.length;
+    const end = input?.selectionEnd ?? start;
+    const nextMessage = `${message.slice(0, start)}${RECIPIENT_NAME_TAG}${message.slice(end)}`;
+    setMessage(nextMessage);
+
+    window.requestAnimationFrame(() => {
+      const cursor = start + RECIPIENT_NAME_TAG.length;
+      input?.focus();
+      input?.setSelectionRange(cursor, cursor);
+    });
+  }
+
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">New campaign</p>
@@ -99,9 +115,19 @@ export function MessageForm({ connectionStatus, onCampaign, onScheduled }: Messa
           disabled={sending}
         />
       </div>
-      <label className="mt-5 block text-sm font-semibold" htmlFor="message">Message</label>
-      <textarea id="message" value={message} onChange={(event) => setMessage(event.target.value)} rows={6} placeholder="Your reminder…" className="mt-2 w-full resize-y rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-emerald-500" />
-      {importedRecipients.some((recipient) => recipient.name) && <p className="mt-2 text-xs text-slate-500">Use <span className="font-mono">{"{{name}}"}</span> to insert each CSV recipient&apos;s name.</p>}
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
+        <label className="block text-sm font-semibold" htmlFor="message">Message</label>
+        <button
+          type="button"
+          disabled={sending}
+          onClick={insertRecipientNameTag}
+          className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 disabled:opacity-50"
+        >
+          Add {RECIPIENT_NAME_TAG}
+        </button>
+      </div>
+      <textarea ref={messageInputRef} id="message" value={message} onChange={(event) => setMessage(event.target.value)} rows={6} placeholder={`Hello ${RECIPIENT_NAME_TAG}, …`} className="mt-2 w-full resize-y rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-emerald-500" />
+      <p className="mt-2 text-xs text-slate-500">The tag is replaced with each contact&apos;s name from the uploaded CSV.</p>
       <fieldset className="mt-5">
         <legend className="text-sm font-semibold">Send option</legend>
         <div className="mt-2 flex gap-5 text-sm">

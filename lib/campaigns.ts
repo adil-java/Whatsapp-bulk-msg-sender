@@ -3,6 +3,7 @@ import "server-only";
 import type { MessagingProvider } from "@/lib/providers/messaging-provider";
 import type { Recipient, SendCampaign } from "@/lib/types";
 import { getMessageDelayMs } from "@/lib/config";
+import { personalizeMessage } from "@/lib/message-template";
 import { whatsapp } from "@/lib/whatsapp";
 
 class CampaignService {
@@ -36,9 +37,7 @@ class CampaignService {
       delete result.error;
 
       try {
-        const message = result.name
-          ? campaign.message.replaceAll("{{name}}", result.name)
-          : campaign.message;
+        const message = personalizeMessage(campaign.message, result.name);
         await this.provider.sendMessage(result.phone, message);
         result.status = "SENT";
       } catch (error) {

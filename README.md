@@ -19,7 +19,7 @@ Ali Khan,03001234567
 Sara Ahmed,+92 312-1234567
 ```
 
-CSV phone numbers are normalized and displayed in an editable **Imported contacts** table. Names and numbers can be corrected, removed, or added before sending. Use `{{name}}` in the message to personalize each recipient's copy.
+CSV phone numbers are normalized and displayed in an editable **Imported contacts** table. Names and numbers can be corrected, removed, or added before sending. Add `{recipient name}` to the message to personalize each recipient's copy from the CSV name; the earlier `{{name}}` tag remains supported.
 
 Phone numbers from any country are accepted with or without a country code. The CSV importer removes visual formatting such as spaces, dashes, and parentheses, but does not add or require a country code.
 
