@@ -16,6 +16,7 @@ export function WhatsAppConnection({ onStatus }: { onStatus: (status: WhatsAppSt
   const [snapshot, setSnapshot] = useState<ConnectionSnapshot>({ status: "DISCONNECTED", hasQr: false });
   const [qr, setQr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const canConnect = snapshot.status === "DISCONNECTED" || snapshot.status === "ERROR";
 
   const refresh = useCallback(async () => {
     const response = await fetch("/api/whatsapp/status", { cache: "no-store" });
@@ -81,7 +82,7 @@ export function WhatsAppConnection({ onStatus }: { onStatus: (status: WhatsAppSt
       )}
 
       <div className="mt-6 flex gap-3">
-        <button onClick={() => void perform("connect")} disabled={busy || snapshot.status !== "DISCONNECTED"} className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">Connect WhatsApp</button>
+        <button onClick={() => void perform("connect")} disabled={busy || !canConnect} className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">{snapshot.status === "ERROR" ? "Retry connection" : "Connect WhatsApp"}</button>
         <button onClick={() => void perform("disconnect")} disabled={busy || snapshot.status === "DISCONNECTED"} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold hover:bg-slate-50">Disconnect</button>
       </div>
     </section>
