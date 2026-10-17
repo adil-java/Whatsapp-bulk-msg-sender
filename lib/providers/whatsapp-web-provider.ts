@@ -12,6 +12,7 @@ export class WhatsAppWebProvider implements MessagingProvider {
   private error?: string;
   private qrDataUrl: string | null = null;
   private initialization: Promise<void> | null = null;
+  private accountCountryCode = "";
 
   async connect(): Promise<void> {
     if (this.status === "CONNECTED" || this.initialization) return;
@@ -37,6 +38,7 @@ export class WhatsAppWebProvider implements MessagingProvider {
     this.client = null;
     this.initialization = null;
     this.qrDataUrl = null;
+    this.accountCountryCode = "";
     this.error = undefined;
     this.status = "DISCONNECTED";
 
@@ -59,24 +61,23 @@ export class WhatsAppWebProvider implements MessagingProvider {
     }
 
     const client = this.client;
-    let accountCountryCode = "";
+    const recipientId = await this.resolveRecipientId(client, phone);
+    if (!recipientId) {
+      throw new Error(
+        `The number ${phone} is not registered on WhatsApp. Check the number in Imported contacts.`,
+      );
+    }
+
     try {
-      accountCountryCode = await client.getCountryCode(client.info.wid.user);
-    } catch {
-      // A full international recipient number can still be resolved below.
-    }
-
-    for (const candidate of recipientNumberCandidates(phone, accountCountryCode)) {
-      const numberId = await client.getNumberId(candidate);
-      if (numberId) {
-        await client.sendMessage(numberId._serialized, message);
-        return;
+      await client.sendMessage(recipientId, message);
+    } catch (error) {
+      if (this.isTransientFrameError(error)) {
+        throw new Error(
+          "WhatsApp Web reloaded while sending. Wait a moment and retry this recipient; the app will not auto-retry to avoid a duplicate message.",
+        );
       }
+      throw error;
     }
-
-    throw new Error(
-      `The number ${phone} is not registered on WhatsApp. Check the number in Imported contacts.`,
-    );
   }
 
   private createClient(): Client {
@@ -109,6 +110,14 @@ export class WhatsAppWebProvider implements MessagingProvider {
       this.error = undefined;
       this.qrDataUrl = null;
       this.initialization = null;
+      void client
+        .getCountryCode(client.info.wid.user)
+        .then((countryCode) => {
+          this.accountCountryCode = countryCode;
+        })
+        .catch(() => {
+          // The value is fetched again during recipient lookup if needed.
+        });
     });
 
     client.on("auth_failure", (message) => {
@@ -122,6 +131,7 @@ export class WhatsAppWebProvider implements MessagingProvider {
       this.status = "DISCONNECTED";
       this.error = `WhatsApp disconnected: ${String(reason)}`;
       this.qrDataUrl = null;
+      this.accountCountryCode = "";
       this.client = null;
       this.initialization = null;
     });
@@ -131,5 +141,37 @@ export class WhatsAppWebProvider implements MessagingProvider {
 
   private errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
+  }
+
+  private async resolveRecipientId(client: Client, phone: string): Promise<string | null> {
+    const maximumAttempts = 3;
+
+    for (let attempt = 1; attempt <= maximumAttempts; attempt += 1) {
+      try {
+        if (!this.accountCountryCode) {
+          this.accountCountryCode = await client.getCountryCode(client.info.wid.user);
+        }
+
+        for (const candidate of recipientNumberCandidates(phone, this.accountCountryCode)) {
+          const numberId = await client.getNumberId(candidate);
+          if (numberId) return numberId._serialized;
+        }
+        return null;
+      } catch (error) {
+        if (!this.isTransientFrameError(error)) throw error;
+        if (attempt === maximumAttempts) {
+          throw new Error("WhatsApp Web is still reloading. Wait a moment and try sending again.");
+        }
+        await new Promise((resolve) => setTimeout(resolve, attempt * 500));
+      }
+    }
+
+    return null;
+  }
+
+  private isTransientFrameError(error: unknown): boolean {
+    return /detached frame|execution context was destroyed|target closed|session closed/i.test(
+      this.errorMessage(error),
+    );
   }
 }
