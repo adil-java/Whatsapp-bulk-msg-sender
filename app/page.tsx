@@ -2,11 +2,13 @@
 
 import { useCallback, useState } from "react";
 import { MessageForm } from "@/components/MessageForm";
+import { MessageStatus } from "@/components/MessageStatus";
 import { WhatsAppConnection } from "@/components/WhatsAppConnection";
-import type { WhatsAppStatus } from "@/lib/types";
+import type { SendCampaign, WhatsAppStatus } from "@/lib/types";
 
 export default function Home() {
   const [status, setStatus] = useState<WhatsAppStatus>("DISCONNECTED");
+  const [campaign, setCampaign] = useState<SendCampaign | null>(null);
   const handleStatus = useCallback((next: WhatsAppStatus) => setStatus(next), []);
 
   return (
@@ -18,9 +20,9 @@ export default function Home() {
       </header>
       <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
         <WhatsAppConnection onStatus={handleStatus} />
-        <MessageForm connectionStatus={status} />
+        <MessageForm connectionStatus={status} onCampaign={setCampaign} />
       </div>
+      {campaign && <div className="mt-6"><MessageStatus campaign={campaign} /></div>}
     </main>
   );
 }
-

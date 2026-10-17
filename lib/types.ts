@@ -14,9 +14,19 @@ export type MessageResult = {
   error?: string;
 };
 
+export type CampaignStatus = "PROCESSING" | "COMPLETED";
+
+export type SendCampaign = {
+  id: string;
+  message: string;
+  createdAt: string;
+  completedAt?: string;
+  status: CampaignStatus;
+  results: MessageResult[];
+};
+
 export type ConnectionSnapshot = {
   status: WhatsAppStatus;
   error?: string;
   hasQr: boolean;
 };
-
