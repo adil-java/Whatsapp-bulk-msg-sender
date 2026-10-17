@@ -31,6 +31,57 @@ describe("parseRecipientCsv", () => {
     ]);
   });
 
+  it("supports the Google Contacts first, middle, last, and phone schema", () => {
+    const csv = [
+      [
+        "First Name",
+        "Middle Name",
+        "Last Name",
+        "Phonetic First Name",
+        "Phonetic Middle Name",
+        "Phonetic Last Name",
+        "Name Prefix",
+        "Name Suffix",
+        "Nickname",
+        "File As",
+        "Organization Name",
+        "Organization Title",
+        "Organization Department",
+        "Birthday",
+        "Notes",
+        "Photo",
+        "Labels",
+        "Phone 1 - Label",
+        "Phone 1 - Value",
+      ].join(","),
+      [
+        "Ali",
+        "N.",
+        "Khan",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "Acme",
+        "Founder",
+        "",
+        "",
+        "",
+        "",
+        "Friends",
+        "Mobile",
+        "+1 415 555 2671",
+      ].join(","),
+    ].join("\n");
+
+    expect(parseRecipientCsv(csv).recipients).toEqual([
+      { name: "Ali N. Khan", phone: "14155552671" },
+    ]);
+  });
+
   it("requires name and phone columns", () => {
     expect(() => parseRecipientCsv("email,address\na@example.com,Home")).toThrow(
       "CSV must contain a name field and a phone field",
